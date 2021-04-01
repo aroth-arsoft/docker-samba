@@ -13,7 +13,6 @@ ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     ALLOW_DNS_UPDATES=secure \
     BIND_INTERFACES_ONLY=yes \
     DOMAIN_ACTION=provision \
-    DOMAIN_LOGONS=yes \
     DOMAIN_MASTER=no \
     INTERFACES="lo eth0" \
     LOG_LEVEL=1 \

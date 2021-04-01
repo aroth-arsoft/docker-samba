@@ -48,7 +48,6 @@ for file in /etc/samba/smb.conf /etc/samba/conf.d/netlogon.conf \
       /etc/samba/conf.d/sysvol.conf; do
   sed -e "s:{{ ALLOW_DNS_UPDATES }}:$ALLOW_DNS_UPDATES:" \
       -e "s:{{ BIND_INTERFACES_ONLY }}:$BIND_INTERFACES_ONLY:" \
-      -e "s:{{ DOMAIN_LOGONS }}:$DOMAIN_LOGONS:" \
       -e "s:{{ DOMAIN_MASTER }}:$DOMAIN_MASTER:" \
       -e "s+{{ INTERFACES }}+$INTERFACES+" \
       -e "s:{{ LOG_LEVEL }}:$LOG_LEVEL:" \
