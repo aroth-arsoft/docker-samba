@@ -7,7 +7,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.license=GPL-3.0 \
     org.label-schema.name=samba-dc \
     org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vcs-url=https://github.com/instantlinux/docker-tools
+    org.label-schema.vcs-url=https://github.com/aroth-arsoft/docker-samba
 
 ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     ALLOW_DNS_UPDATES=secure \
@@ -25,8 +25,10 @@ ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     WINBIND_USE_DEFAULT_DOMAIN=yes \
     WORKGROUP=AD
 
-ARG SAMBA_VERSION=4.13.5-r0
-#ARG SAMBA_VERSION=4.13.3-r1
+# Latest versions available on 2021-04-01:
+# edge: 4.14.2-r0
+# v3.13: 4.13.7-r0
+ARG SAMBA_VERSION=4.14.2-r0
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
       bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata
