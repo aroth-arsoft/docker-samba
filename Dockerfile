@@ -8,8 +8,8 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/aroth-arsoft/docker-samba
 
-# Latest versions available on 2021-06-30:
-# edge: 4.14.6-r0
+# Latest versions available on 2021-09-09:
+# edge: 4.14.6-r1
 # v3.14: 4.14.5-r0
 # https://pkgs.alpinelinux.org/packages?name=samba&branch=edge
 ARG SAMBA_VERSION=4.14.5-r0
@@ -30,7 +30,8 @@ ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     SERVER_STRING="Samba Domain Controller" \
     TZ=UTC \
     WINBIND_USE_DEFAULT_DOMAIN=yes \
-    WORKGROUP=AD
+    WORKGROUP=AD \
+    LDB_MODULES_PATH="/usr/lib/samba/ldb"
 
 VOLUME /etc/samba /var/lib/samba
 EXPOSE 53 53/udp 88 88/udp 135 137-138/udp 139 389 389/udp 445 464 464/udp 636 3268-3269 49152-65535
