@@ -9,7 +9,7 @@ The most-common directives can be specified in environment variables as shown be
 Basic requirements:
 
 * A Domain Controller must have a static IP address and persistent DNS entry
-* This container must be run in network_mode:host
+* This container must be run in network_mode:host, and with cap_add:CAP_SYS_ADMIN privs
 * A NETBIOS_NAME or hostname must be specified, which becomes the netbios name.
 
 The directories /etc/samba and /var/lib/samba must be mounted as persistent volumes. If /var/lib/samba is empty, the "provision" or "join" action specified in DOMAIN_ACTION variable will be taken.
@@ -117,5 +117,9 @@ Then restart the secondary with `DOMAIN_ACTION=join`.
 {noformat}
 samba-tool domain demote --remove-other-dead-server=xxx
 {noformat}
+
+### Contributing
+
+If you want to make improvements to this image, see [CONTRIBUTING](https://github.com/instantlinux/docker-tools/blob/main/CONTRIBUTING.md).
 
 [![](https://img.shields.io/badge/license-GPL--3.0-red.svg)](https://choosealicense.com/licenses/gpl-3.0/ "License badge") [![](https://img.shields.io/badge/code-samba_team%2Fsamba-blue.svg)](https://gitlab.com/samba-team/samba "Code repo")
