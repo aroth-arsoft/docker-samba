@@ -1,4 +1,5 @@
-FROM alpine:3.15
+#FROM alpine:3.15
+FROM alpine:edge
 MAINTAINER Rich Braun "docker@instantlinux.net"
 ARG BUILD_DATE
 ARG VCS_REF
@@ -13,10 +14,11 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 # v3.15: 4.15.5-r0
 # v3.14: 4.14.5-r0
 # https://pkgs.alpinelinux.org/packages?name=samba&branch=edge
-ARG SAMBA_VERSION=4.15.5-r0
+ARG SAMBA_VERSION=4.15.7-r0
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
-      bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata acl attr
+      bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata acl attr \
+      samba-winbind-clients
 
 ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     ALLOW_DNS_UPDATES=secure \
