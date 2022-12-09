@@ -40,7 +40,7 @@ while [ $# -ne 0 ]; do
 done
 
 
-docker build --tag ${image_name}:$lsb_rel "$script_dir"
+docker build --pull --tag ${image_name}:$lsb_rel "$script_dir"
 docker tag ${image_name}:$lsb_rel $docker_user/${image_name}:$lsb_rel
 
 docker login --username "${docker_user}"
