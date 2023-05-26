@@ -1,8 +1,9 @@
 #!/bin/bash -x
 script_file=`readlink -f "$0"`
 script_dir=`dirname "$script_file"`
-lsb_rel='latest'
+lsb_rel='dev'
 got_lsb_rel=0
+push=0
 
 image_name='samba-dc'
 docker_user='rothan'
@@ -12,6 +13,9 @@ function usage() {
 	echo "OPTIONS:"
 	echo "    -h, --help            shows this help"
 	echo "    -v, --verbose         enable verbose output"
+	echo "    -L, --latest          build latest instead of development"
+	echo "    --push                Publish/upload docker image to public repository"
+	echo "    --tag <TAG>           override tag name"
 	echo ""
 	echo "  LSB_RELEASE    name of the ubuntu release (default $lsb_rel)"
 	exit 0
@@ -22,6 +26,9 @@ while [ $# -ne 0 ]; do
 	case "$1" in
 	'-?'|'-h'|'--help') usage;;
 	'-v'|'--verbose') verbose=1; ;;
+	'-L'|'--latest') lsb_rel='latest'; ;;
+	'--push') push=1; ;;
+	'--tag') lsb_rel="$2"; shift; ;;
 	-*)
 		echo "Unrecognized option $1" >&2
 		exit 1
@@ -41,7 +48,12 @@ done
 
 
 docker build --pull --tag ${image_name}:$lsb_rel "$script_dir"
-docker tag ${image_name}:$lsb_rel $docker_user/${image_name}:$lsb_rel
+[ $? -ne 0 ] && exit 1
 
-docker login --username "${docker_user}"
-docker push $docker_user/${image_name}:$lsb_rel
+docker tag ${image_name}:$lsb_rel $docker_user/${image_name}:$lsb_rel
+if [ $push -ne 0 ]; then
+	docker login --username "${docker_user}"
+	[ $? -ne 0 ] && exit 1
+	docker push $docker_user/${image_name}:$lsb_rel
+fi
+

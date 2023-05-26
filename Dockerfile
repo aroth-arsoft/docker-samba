@@ -1,5 +1,5 @@
-#FROM alpine:3.15
-FROM alpine:edge
+FROM alpine:3.18
+#FROM alpine:edge
 MAINTAINER Rich Braun "docker@instantlinux.net"
 ARG BUILD_DATE
 ARG VCS_REF
@@ -9,12 +9,11 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/aroth-arsoft/docker-samba
 
-# Latest versions available on 2022-12-09:
-# edge: 4.16.7-r1
-# v3.15: 4.15.5-r0
-# v3.14: 4.14.5-r0
+# Latest versions available on 2023-05-26:
+# edge: 4.18.2-r0
+# v3.18: 4.18.2-r0
 # https://pkgs.alpinelinux.org/packages?name=samba&branch=edge
-ARG SAMBA_VERSION=4.16.7-r1
+ARG SAMBA_VERSION=4.18.2-r0
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
       bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata acl attr \
@@ -34,13 +33,15 @@ ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
     TZ=UTC \
     WINBIND_USE_DEFAULT_DOMAIN=yes \
     WORKGROUP=AD \
-    LDB_MODULES_PATH="/usr/lib/samba/ldb"
+    LDB_MODULES_PATH="/usr/lib/samba/ldb" \
+    WEBURL= \
+    MAILSERVER=
 
 VOLUME /etc/samba /var/lib/samba
 EXPOSE 53 53/udp 88 88/udp 135 137-138/udp 139 389 389/udp 445 464 464/udp 636 3268-3269 49152-65535
 
 COPY *.conf.j2 /root/
-COPY entrypoint.sh /usr/local/bin/
+COPY entrypoint.sh samba-password-expire /usr/local/bin/
 RUN chmod 0755 /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
