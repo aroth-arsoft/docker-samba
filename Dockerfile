@@ -9,11 +9,11 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/aroth-arsoft/docker-samba
 
-# Latest versions available on 2023-05-26:
-# edge: 4.18.2-r0
-# v3.18: 4.18.2-r0
+# Latest versions available on 2023-09-21:
+# edge: 4.18.6-r0
+# v3.18: 4.18.5-r0
 # https://pkgs.alpinelinux.org/packages?name=samba&branch=edge
-ARG SAMBA_VERSION=4.18.2-r0
+ARG SAMBA_VERSION=4.18.5-r0
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
       bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata acl attr \
