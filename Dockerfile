@@ -1,5 +1,5 @@
 #FROM alpine:3.19
-FROM alpine:edge
+FROM alpine:3.22
 MAINTAINER Rich Braun "docker@instantlinux.net"
 ARG BUILD_DATE
 ARG VCS_REF
@@ -9,11 +9,10 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/aroth-arsoft/docker-samba
 
-# Latest versions available on 2024-05-01:
-# edge: 4.19.5-r2
-# v3.19: 4.18.9-r0
+# Latest versions available on 2025-07-10:
+# v3.22: 4.21.4-r4
 # https://pkgs.alpinelinux.org/packages?name=samba&branch=edge
-ARG SAMBA_VERSION=4.19.5-r2
+ARG SAMBA_VERSION=4.21.4-r4
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
       bind bind-libs bind-tools libxml2 tzdata acl attr \
