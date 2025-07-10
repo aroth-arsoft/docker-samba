@@ -16,7 +16,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 ARG SAMBA_VERSION=4.19.5-r2
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION tdb \
-      bind bind-libs bind-tools libcrypto1.1 libxml2 tzdata acl attr \
+      bind bind-libs bind-tools libxml2 tzdata acl attr \
       samba-winbind-clients
 
 ENV ADMIN_PASSWORD_SECRET=samba-admin-password \
