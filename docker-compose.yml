@@ -3,7 +3,7 @@ version: "3.1"
 services:
   samba:
     container_name: samba
-    image: samba:latest
+    image: rothan/samba-dc:dev
     restart: always
     network_mode: host
     cap_add:
@@ -16,6 +16,7 @@ services:
       REALM: ${SAMBA_REALM:-ad.example.com}
       TZ: ${TZ:-UTC}
       WORKGROUP: ${SAMBA_WORKGROUP:-AD}
+      SERVER_STRING: ${SERVER_STRING:-My AD server}
     volumes:
       - etc:/etc/samba
       - lib:/var/lib/samba

@@ -1,5 +1,5 @@
 ## samba-dc
-[![](https://img.shields.io/docker/v/instantlinux/samba-dc?sort=date)](https://microbadger.com/images/instantlinux/samba-dc "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/samba-dc.svg)](https://microbadger.com/images/instantlinux/samba-dc "Image badge") ![](https://img.shields.io/badge/platform-amd64%20arm64%20arm%2Fv6%20arm%2Fv7-blue "Platform badge") [![](https://img.shields.io/badge/dockerfile-latest-blue)](https://gitlab.com/instantlinux/docker-tools/-/blob/master/images/samba/Dockerfile "dockerfile")
+[![](https://img.shields.io/docker/v/instantlinux/samba-dc?sort=date)](https://hub.docker.com/r/instantlinux/samba-dc/tags "Version badge") [![](https://img.shields.io/docker/image-size/instantlinux/samba-dc?sort=date)](https://github.com/instantlinux/docker-tools/tree/main/images/samba-dc "Image badge") ![](https://img.shields.io/badge/platform-amd64%20arm64%20arm%2Fv6%20arm%2Fv7-blue "Platform badge") [![](https://img.shields.io/badge/dockerfile-latest-blue)](https://gitlab.com/instantlinux/docker-tools/-/blob/main/images/samba/Dockerfile "dockerfile")
 
 Samba domain controller.
 
@@ -19,7 +19,7 @@ The most-common directives can be specified in environment variables as shown be
 Test your configuration and/or manage contents of your directory using Apache Directory Studio. Make a connection on port 636 with method SSL encryption (ldaps); specify simple authentication with username <realm prefix>\<your name>. The ldaps certificate is self-signed so you'll need to accept it first.
 
 This repo has complete instructions for
-[building a kubernetes cluster](https://github.com/instantlinux/docker-tools/blob/master/k8s/README.md) where you can deploy [kubernetes.yaml](https://github.com/instantlinux/docker-tools/blob/master/images/samba-dc/kubernetes.yaml)  using _make_ and customizing [Makefile.vars](https://github.com/instantlinux/docker-tools/blob/master/k8s/Makefile.vars) after cloning this repo:
+[building a kubernetes cluster](https://github.com/instantlinux/docker-tools/blob/main/k8s/README.md) where you can launch with [helm](https://github.com/instantlinux/docker-tools/tree/main/images/samba-dc/helm) or [kubernetes.yaml](https://github.com/instantlinux/docker-tools/blob/main/images/samba-dc/kubernetes.yaml)  using _make_ and customizing [Makefile.vars](https://github.com/instantlinux/docker-tools/blob/main/k8s/Makefile.vars) after cloning this repo:
 ~~~
 git clone https://github.com/instantlinux/docker-tools.git
 cd docker-tools/k8s
@@ -31,14 +31,15 @@ make dc03
 * The "join" command is tested as a spare domain controller against Active Directory running on Windows Server 2008, and against other samba4 domain controllers.
 * The "provision" is tested as a Samba4 domain controller with a Windows 7 client.
 * The "BIND_INTERFACES_ONLY" option is working now.
-* It is very difficult to get multiple instances of samba-dc replicating with one another. I've given up on it as of version 4.8.8; perhaps a future version will fix these poblems.
+* It is very difficult to get multiple instances of samba-dc replicating with one another. I've given up on it as of version 4.8.8; perhaps a future version will fix these problems.
 
 ### Variables
 Variable | Default | Description |
 -------- | ------- | ----------- |
-ADMIN_PASSWORD_SECRET | samba-admin-password | admin secret, see below
+ADMIN_PASSWORD_SECRET | samba-admin-password | name of admin secret, see below
 ALLOW_DNS_UPDATES | secure | enable DNS updates
 BIND_INTERFACES_ONLY | yes | specify IP addresses or interfaces
+DNS_FORWARDER | (none) | value to place in `dns forwarder` in smb.conf
 DOMAIN_ACTION | provision | set to 'join' if existing domain
 DOMAIN_LOGONS | yes | support workgroup login
 DOMAIN_MASTER | no | "WAN-wide browse list collation"--haha, see [man page](https://www.samba.org/samba/docs/man/manpages-3/smb.conf.5.html)
@@ -46,7 +47,7 @@ INTERFACES | lo eth0 | list of IP addresses or interfaces
 LOG_LEVEL | 1 | log verbosity
 MODEL | standard | process model: single, standard, thread
 NETBIOS_NAME | (hostname -s) | the NETBIOS name
-REALM | ad.example.com | active-directory DNS realm
+REALM | ad.example.com | active-directory DNS realm (use lowercase)
 SERVER_STRING | Samba Domain Controller | server identity
 TZ | UTC | local timezone
 WINBIND_USE_DEFAULT_DOMAIN | yes | allow username without domain component
@@ -54,13 +55,13 @@ WORKGROUP | AD | workgroup (realm prefix - poorly documented)
 
 ### Secrets
 This is only needed at first run, for samba domain provision or join. Do NOT leave your domain-controller administrator secret activated at any other time.
-For clarity, this is a docker-secret with the initial Samba admin password, not the password itself.
+For clarity, this is a docker-secret with the initial Samba admin password, not the password itself. It must contain a passphrase of sufficient complexity.
 
 Secret | Description
 ------ | -----------
 samba-admin-password | domain-administrator pw
 
-Secrets can be specified as kubernetes secrets, files (see the _secrets_ section of the example [docker-compose.yml](https://github.com/instantlinux/docker-tools/blob/master/images/samba-dc/docker-compose.yml) provided in this repo), or as swarm secrets.
+Secrets can be specified as kubernetes secrets, files (see the _secrets_ section of the example [docker-compose.yml](https://github.com/instantlinux/docker-tools/blob/main/images/samba-dc/docker-compose.yml) provided in this repo), or as swarm secrets.
 
 ### Notes
 Getting a domain-controller cluster up and running properly requires a lot of correctly-configured trust relationships established between domain controllers, and Samba's documentation of error messages and problem-resolutions is pretty thin. If you're only running this version of samba, it's likely there will be few problems. But in a mixed environment with Microsoft Active Directory servers and/or older versions of samba4, you're bound to run into problems that require tweaking. A few diagnostic commands are available within this container; here are notes that might help you get up and running more quickly:
@@ -117,6 +118,21 @@ Then restart the secondary with `DOMAIN_ACTION=join`.
 {noformat}
 samba-tool domain demote --remove-other-dead-server=xxx
 {noformat}
+
+* If you get the error message shown here, check that the samba-admin-password secret contains a value.
+```
+ERROR(ldb): uncaught exception - Element clearTextPassword has empty attribute in ldb
+message (CN=Administrator,CN=Users,DC=ad,DC=***,DC=nl)
+```
+
+### Reload AD TLS certificates
+
+The TLS certificates used for Samba's AD DC LDAP server were previously only read on startup, and this meant that when then expired it was required to restart Samba, disrupting service to other users.
+```
+smbcontrol ldap_server reload-certs
+```
+
+This will now allow these certificates to be reloaded 'on the fly'
 
 ### Contributing
 

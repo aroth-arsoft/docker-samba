@@ -14,17 +14,17 @@ if [ ! -f /etc/timezone ] && [ ! -z "$TZ" ]; then
 fi
 
 if [ ! -f /var/lib/samba/registry.tdb ]; then
-  if [ -f /run/secrets/$ADMIN_PASSWORD_SECRET ]; then
-    ADMIN_PASSWORD=$(cat /run/secrets/$ADMIN_PASSWORD_SECRET)
-  else
-    ADMIN_PASSWORD='pass'
+  if [ ! -f /run/secrets/$ADMIN_PASSWORD_SECRET ]; then
+    echo 'Cannot read secret $ADMIN_PASSWORD_SECRET in /run/secrets'
+    exit 1
   fi
+  ADMIN_PASSWORD=$(cat /run/secrets/$ADMIN_PASSWORD_SECRET)
   if [ "$BIND_INTERFACES_ONLY" == yes ]; then
     INTERFACE_OPTS="--option=\"bind interfaces only=yes\" \
       --option=\"interfaces=$INTERFACES\""
   fi
   if [ $DOMAIN_ACTION == provision ]; then
-    echo "Admin password: '$ADMIN_PASSWORD'"
+    #echo "Admin password: '$ADMIN_PASSWORD'"
     PROVISION_OPTS="--server-role=dc --use-rfc2307 --domain=$WORKGROUP \
     --realm=$REALM --adminpass='$ADMIN_PASSWORD'"
   elif [ $DOMAIN_ACTION == join ]; then
@@ -39,7 +39,7 @@ if [ ! -f /var/lib/samba/registry.tdb ]; then
   echo "Provision Samba"
   # This step is required for INTERFACE_OPTS to work as expected
   echo "samba-tool domain $DOMAIN_ACTION $PROVISION_OPTS $INTERFACE_OPTS \
-     --dns-backend=SAMBA_INTERNAL" | sh -x
+     --dns-backend=SAMBA_INTERNAL" | sh
 
   mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
   echo 'root = administrator' > /etc/samba/smbusers
@@ -50,17 +50,7 @@ echo "Configure samba"
 mkdir -p -m 700 /etc/samba/conf.d
 for file in /etc/samba/smb.conf /etc/samba/conf.d/netlogon.conf \
       /etc/samba/conf.d/sysvol.conf; do
-  sed -e "s:{{ ALLOW_DNS_UPDATES }}:$ALLOW_DNS_UPDATES:" \
-      -e "s:{{ BIND_INTERFACES_ONLY }}:$BIND_INTERFACES_ONLY:" \
-      -e "s:{{ DOMAIN_MASTER }}:$DOMAIN_MASTER:" \
-      -e "s+{{ INTERFACES }}+$INTERFACES+" \
-      -e "s:{{ LOG_LEVEL }}:$LOG_LEVEL:" \
-      -e "s:{{ NETBIOS_NAME }}:$NETBIOS_NAME:" \
-      -e "s:{{ REALM }}:$REALM:" \
-      -e "s:{{ SERVER_STRING }}:$SERVER_STRING:" \
-      -e "s:{{ WINBIND_USE_DEFAULT_DOMAIN }}:$WINBIND_USE_DEFAULT_DOMAIN:" \
-      -e "s:{{ WORKGROUP }}:$WORKGROUP:" \
-      /root/$(basename $file).j2 > $file
+  jinjanate --quiet /root/$(basename $file).j2 -o $file
 done
 for file in $(ls -A /etc/samba/conf.d/*.conf); do
   echo "include = $file" >> /etc/samba/smb.conf
