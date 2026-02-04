@@ -14,7 +14,7 @@ ARG SAMBA_VERSION=4.22.6-r0
 
 RUN apk add --update --no-cache krb5 ldb-tools samba-dc=$SAMBA_VERSION \
       samba-winbind-clients=$SAMBA_VERSION tdb bind bind-libs bind-tools \
-      libcrypto3 libxml2 tzdata acl attr py3-cryptography py3-setuptools py3-pip && \
+      libcrypto3 libxml2 tzdata acl attr py3-cryptography py3-setuptools py3-pip py3-requests && \
     pip install jinjanator --break-system-packages && \
     apk del py3-pip
 
